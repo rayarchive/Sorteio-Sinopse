@@ -221,6 +221,7 @@
         transition: top 0.6s ease;
         pointer-events: auto; cursor: grab;
         clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 97%, 0 100%);
+        touch-action: none; /* Desativa gestos do navegador para melhor controle */
     }
     .book.open .ribbon { top: 0; }
     .ribbon.pulling { cursor: grabbing; transition: none; }
@@ -358,6 +359,7 @@
 
     const startPull = (e) => {
         if (!aberto || sorteando) return;
+        e.preventDefault(); // Previne comportamentos padrão do navegador
         isPulling = true;
         startY = (e.touches ? e.touches[0].clientY : e.clientY);
         ribbon.classList.add('pulling');
@@ -365,6 +367,7 @@
 
     const pull = (e) => {
         if (!isPulling) return;
+        e.preventDefault(); // Previne scroll durante o arrasto
         let currentY = (e.touches ? e.touches[0].clientY : e.clientY);
         let deltaY = (currentY - startY) / currentScale; 
 
@@ -386,12 +389,16 @@
         }
     };
 
+    // Eventos para desktop (mouse)
     ribbon.addEventListener('mousedown', startPull);
     document.addEventListener('mousemove', pull);
     document.addEventListener('mouseup', endPull);
+    
+    // Eventos para mobile (touch) - com passive: false para permitir preventDefault
     ribbon.addEventListener('touchstart', startPull, {passive: false});
     document.addEventListener('touchmove', pull, {passive: false});
     document.addEventListener('touchend', endPull);
+    document.addEventListener('touchcancel', endPull); // Adiciona tratamento para quando o toque é cancelado
 
     function sortear() {
         sorteando = true;
